@@ -10,6 +10,8 @@
 #include "hiredis.h"
 #include <time.h>
 
+using namespace xrc;
+
 RedisPool::RedisPool() {
     mRedisCacheList = NULL;
     mTypeSize=0;
@@ -204,7 +206,7 @@ bool RedisConn::RedisConnect()
     if (NULL==mCtx) {
         bRet = false;
     } else {
-        bRet = auth();
+        bRet = auth() && Ping();
         mConnStatus = bRet;
     }
 
@@ -234,7 +236,7 @@ bool RedisConn::RedisReConnect()
 bool RedisConn::Ping()
 {
     redisReply *reply = static_cast<redisReply *>(redisCommand(mCtx, "PING"));
-    bool bRet = (NULL != reply);
+    bool bRet = (NULL != reply) && (reply->str) && (strcasecmp(reply->str, "PONG") == 0);
     mConnStatus = bRet;
     if(bRet)
     {
@@ -299,11 +301,12 @@ bool RedisDBSlice::ConnectRedisNodes(unsigned int cahcetype, unsigned int dbinde
                 if (pRedisconn->RedisConnect()) {
                     mSliceConn.RedisMasterConn.push_back(pRedisconn);
                     mStatus = REDISDB_WORKING;
+                    bRet = true;
                 } else {
                     delete pRedisconn;
                 }
             }
-            bRet = true;
+            
         } else if (SLAVE == role) {
             XLOCK(mSliceConn.SlaveLock);
             RedisConnPool *pSlaveNode = new RedisConnPool;
@@ -317,12 +320,12 @@ bool RedisDBSlice::ConnectRedisNodes(unsigned int cahcetype, unsigned int dbinde
                 pRedisconn->Init(cahcetype, dbindex, host.c_str(), port, passwd.c_str(), poolsize, timeout, role, slave_idx);
                 if (pRedisconn->RedisConnect()) {
                     pSlaveNode->push_back(pRedisconn);
+                    bRet = true;
                 } else {
                     delete pRedisconn;
                 }
             }
             mSliceConn.RedisSlaveConn.push_back(pSlaveNode);
-            bRet = true;
             mHaveSlave = true;
         } else {
             bRet = false;

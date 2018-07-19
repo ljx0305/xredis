@@ -11,6 +11,7 @@
 
 #include "xRedisClient.h"
 
+using namespace xrc;
 // AP Hash Function
 unsigned int APHash(const char *str) {
     unsigned int hash = 0;
@@ -52,8 +53,8 @@ int main(int argc, char **argv) {
 
     xRedisClient xRedis;
     xRedis.Init(CACHE_TYPE_MAX);
-    xRedis.ConnectRedisCache(RedisList1, 3, CACHE_TYPE_1);
-    xRedis.ConnectRedisCache(RedisList2, 5, CACHE_TYPE_2);
+    xRedis.ConnectRedisCache(RedisList1, sizeof(RedisList1) / sizeof(RedisNode),3, CACHE_TYPE_1);
+    xRedis.ConnectRedisCache(RedisList2, sizeof(RedisList2) / sizeof(RedisNode), 5, CACHE_TYPE_2);
         
     const char *key = "test";
     const char *value = "test value";
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
         printf("error [%s] \r\n", dbi.GetErrInfo());
      }
 
-    string strValue;
+    std::string strValue;
     bRet = xRedis.get(dbi, szKey, strValue);
     if (bRet) {
         printf("%s \r\n", strValue.c_str());

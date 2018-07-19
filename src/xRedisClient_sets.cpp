@@ -7,8 +7,9 @@
  */
 
 #include "xRedisClient.h"
+using namespace xrc;
 
-bool xRedisClient::sadd(const RedisDBIdx& dbi,     const string& key, const VALUES& vValue, int64_t& count){
+bool xRedisClient::sadd(const RedisDBIdx& dbi,     const std::string& key, const VALUES& vValue, int64_t& count){
     VDATA vCmdData;
     vCmdData.push_back("SADD");
     vCmdData.push_back(key);
@@ -17,7 +18,7 @@ bool xRedisClient::sadd(const RedisDBIdx& dbi,     const string& key, const VALU
     return commandargv_integer(dbi, vCmdData, count);
 }
 
-bool xRedisClient::scard(const RedisDBIdx& dbi,     const string& key, int64_t& count){
+bool xRedisClient::scard(const RedisDBIdx& dbi,     const std::string& key, int64_t& count){
     if (0==key.length()) {
         return false;
     }
@@ -37,7 +38,7 @@ bool xRedisClient::sdiff(const DBIArray& vdbi,     const KEYS& vkey, VALUES& sVa
     KEYS::const_iterator     iter_key = vkey.begin();
     int i=0;
     for (; iter_key!=vkey.end(); ++iter_key, ++iter_dbi, ++i) {
-        const string &key = *iter_key;
+        const std::string &key = *iter_key;
         const RedisDBIdx &dbi = *iter_dbi;
         if (!smembers(dbi, key, setData[i])) {
             delete [] setData;
@@ -71,7 +72,7 @@ bool xRedisClient::sinter(const DBIArray& vdbi, const KEYS& vkey, VALUES& sValue
     KEYS::const_iterator     iter_key = vkey.begin();
     int i=0;
     for (; iter_key!=vkey.end(); ++iter_key, ++iter_dbi, ++i) {
-        const string &key = *iter_key;
+        const std::string &key = *iter_key;
         const RedisDBIdx &dbi = *iter_dbi;
         if (!smembers(dbi, key, setData[i])) {
             delete [] setData;
@@ -151,6 +152,12 @@ bool xRedisClient::srem(const RedisDBIdx& dbi,  const KEY& key, const VALUES& vm
     return commandargv_integer(dbi, vCmdData, count);
 }
 
+bool xRedisClient::sscan(const RedisDBIdx& dbi, const std::string& key, int64_t &cursor, const char *pattern, 
+    uint32_t count, ArrayReply& array, xRedisContext& ctx)
+{
+    return ScanFun("SSCAN", dbi, &key, cursor, pattern, count, array, ctx);
+}
+
 bool xRedisClient::sunion(const DBIArray& vdbi,     const KEYS& vkey, VALUES& sValue){
     size_t size = vkey.size();
     VALUES *setData = new VALUES[size];
@@ -160,7 +167,7 @@ bool xRedisClient::sunion(const DBIArray& vdbi,     const KEYS& vkey, VALUES& sV
     KEYS::const_iterator     iter_key = vkey.begin();
     int i=0;
     for (; iter_key!=vkey.end(); ++iter_key, ++iter_dbi, ++i) {
-        const string &key = *iter_key;
+        const std::string &key = *iter_key;
         const RedisDBIdx &dbi = *iter_dbi;
         if (!smembers(dbi, key, setData[i])) {
             delete [] setData;

@@ -9,8 +9,9 @@
 #include "xRedisClient.h"
 #include "xRedisPool.h"
 #include <sstream>
+using namespace xrc;
 
-bool  xRedisClient::del(const RedisDBIdx& dbi,    const string& key) {
+bool  xRedisClient::del(const RedisDBIdx& dbi, const std::string& key) {
     if (0==key.length()) {
         return false;
     }
@@ -28,7 +29,7 @@ bool  xRedisClient::del(const DBIArray& vdbi,    const KEYS &  vkey, int64_t& co
     KEYS::const_iterator iter_key     = vkey.begin();
     for(;iter_key!=vkey.end();++iter_key, ++iter_dbi) {
         const RedisDBIdx &dbi = (*iter_dbi);
-        const string &key     = (*iter_key);
+        const std::string &key = (*iter_key);
         if (del(dbi, key)) {
             count++;
         }
@@ -36,7 +37,7 @@ bool  xRedisClient::del(const DBIArray& vdbi,    const KEYS &  vkey, int64_t& co
     return true;
 }
 
-bool xRedisClient::exists(const RedisDBIdx& dbi, const string& key) {
+bool xRedisClient::exists(const RedisDBIdx& dbi, const std::string& key) {
     if (0==key.length()) {
         return false;
     }
@@ -44,7 +45,7 @@ bool xRedisClient::exists(const RedisDBIdx& dbi, const string& key) {
     return command_bool(dbi, "EXISTS %s", key.c_str());
 }
 
-bool xRedisClient::expire(const RedisDBIdx& dbi, const string& key, unsigned int second) {
+bool xRedisClient::expire(const RedisDBIdx& dbi, const std::string& key, unsigned int second) {
     if (0==key.length()) {
         return false;
     }
@@ -62,7 +63,7 @@ bool xRedisClient::expire(const RedisDBIdx& dbi, const string& key, unsigned int
     }
 }
 
-bool xRedisClient::expireat(const RedisDBIdx& dbi, const string& key, unsigned int timestamp) {
+bool xRedisClient::expireat(const RedisDBIdx& dbi, const std::string& key, unsigned int timestamp) {
     if (0==key.length()) {
         return false;
     }
@@ -70,7 +71,7 @@ bool xRedisClient::expireat(const RedisDBIdx& dbi, const string& key, unsigned i
     return command_bool(dbi, "EXPIREAT %s %u", key.c_str(), timestamp);
 }
 
-bool xRedisClient::persist(const RedisDBIdx& dbi, const string& key) {
+bool xRedisClient::persist(const RedisDBIdx& dbi, const std::string& key) {
     if (0==key.length()) {
         return false;
     }
@@ -78,14 +79,14 @@ bool xRedisClient::persist(const RedisDBIdx& dbi, const string& key) {
     return command_bool(dbi, "PERSIST %s %u", key.c_str());
 }
 
-bool xRedisClient::pexpire(const RedisDBIdx& dbi, const string& key, unsigned int milliseconds) {
+bool xRedisClient::pexpire(const RedisDBIdx& dbi, const std::string& key, unsigned int milliseconds) {
     if (0==key.length()) {
         return false;
     }
     return command_bool(dbi, "PEXPIRE %s %u", key.c_str(), milliseconds);
 }
 
-bool xRedisClient::pexpireat(const RedisDBIdx& dbi, const string& key, unsigned int millisecondstimestamp) {
+bool xRedisClient::pexpireat(const RedisDBIdx& dbi, const std::string& key, unsigned int millisecondstimestamp) {
     if (0==key.length()) {
         return false;
     }
@@ -93,7 +94,7 @@ bool xRedisClient::pexpireat(const RedisDBIdx& dbi, const string& key, unsigned 
     return command_bool(dbi, "PEXPIREAT %s %u", key.c_str(), millisecondstimestamp);
 }
 
-bool xRedisClient::pttl(const RedisDBIdx& dbi, const string& key, int64_t &milliseconds) {
+bool xRedisClient::pttl(const RedisDBIdx& dbi, const std::string& key, int64_t &milliseconds) {
     if (0==key.length()) {
         return false;
     }
@@ -101,7 +102,7 @@ bool xRedisClient::pttl(const RedisDBIdx& dbi, const string& key, int64_t &milli
     return command_integer(dbi, milliseconds, "PTTL %s", key.c_str());
 }
 
-bool xRedisClient::ttl(const RedisDBIdx& dbi, const string& key, int64_t &seconds) {
+bool xRedisClient::ttl(const RedisDBIdx& dbi, const std::string& key, int64_t &seconds) {
     if (0==key.length()) {
         return false;
     }
@@ -119,10 +120,13 @@ bool xRedisClient::randomkey(const RedisDBIdx& dbi, KEY& key){
     return command_string(dbi, key, "RANDOMKEY");
 }
 
+bool xRedisClient::scan(const RedisDBIdx& dbi, int64_t &cursor, const char *pattern, 
+    uint32_t count, ArrayReply& array, xRedisContext& ctx)
+{
+    return ScanFun("SCAN",dbi, NULL, cursor, pattern, count, array, ctx);
+}
 
-
-
-bool xRedisClient::sort(const RedisDBIdx& dbi, ArrayReply& array, const string& key, const char* by,
+bool xRedisClient::sort(const RedisDBIdx& dbi, ArrayReply& array, const std::string& key, const char* by,
     LIMIT *limit /*= NULL*/, bool alpha /*= false*/, const FILEDS* get /*= NULL*/,
     const SORTODER order /*= ASC*/, const char* destination )
 {
